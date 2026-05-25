@@ -165,6 +165,7 @@ function resolve(operationName: string, variables: any): any {
       };
     }
 
+    case 'Book':
     case 'GetBook': {
       const book = MOCK_BOOKS.find((b) => b.id === variables.id);
       if (!book) throw new Error('Book not found');
@@ -176,6 +177,7 @@ function resolve(operationName: string, variables: any): any {
       };
     }
 
+    case 'Video':
     case 'GetVideo': {
       const video = MOCK_VIDEOS.find((v) => v.id === variables.id);
       if (!video) throw new Error('Video not found');

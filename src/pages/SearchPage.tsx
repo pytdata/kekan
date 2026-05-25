@@ -83,9 +83,9 @@ const SearchPage: React.FC = () => {
                 <Play size={18} className="text-rose-500" />
                 <h2 className="text-lg font-extrabold text-slate-800">Videos</h2>
               </div>
-              <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {videos.map((video: any) => (
-                  <VideoCard key={video.id} video={video} size="md" />
+                  <VideoCard key={video.id} video={video} size="full" />
                 ))}
               </div>
             </section>

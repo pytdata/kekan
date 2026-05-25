@@ -123,9 +123,9 @@ const BrowsePage: React.FC = () => {
       {(activeTab === 'all' || activeTab === 'videos') && videos.length > 0 && (
         <section>
           <SectionHeader title="Videos" />
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {videos.map((video: any) => (
-              <VideoCard key={video.id} video={video} size="md" />
+              <VideoCard key={video.id} video={video} size="full" />
             ))}
           </div>
         </section>

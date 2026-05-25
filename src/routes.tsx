@@ -1,10 +1,12 @@
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const BrowsePage = lazy(() => import('@/pages/BrowsePage'));
 const SearchPage = lazy(() => import('@/pages/SearchPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const RecentPage = lazy(() => import('@/pages/RecentPage'));
 const ReaderPage = lazy(() => import('@/pages/ReaderPage'));
 const VideoPlayerPage = lazy(() => import('@/pages/VideoPlayerPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
@@ -25,6 +27,7 @@ export const routes: RouteObject[] = [
   { path: '/', element: wrap(HomePage) },
   { path: '/browse', element: wrap(BrowsePage) },
   { path: '/search', element: wrap(SearchPage) },
+  { path: '/recent', element: wrap(RecentPage) },
   { path: '/profile', element: wrap(ProfilePage) },
   { path: '/book/:id', element: wrap(ReaderPage) },
   { path: '/video/:id', element: wrap(VideoPlayerPage) },
@@ -33,6 +36,8 @@ export const routes: RouteObject[] = [
   { path: '/otp', element: wrap(OtpPage) },
   { path: '/reset-password', element: wrap(ResetPasswordPage) },
   { path: '/subscription', element: wrap(SubscriptionPage) },
+  // Redirect bare /admin to /admin/dashboard
+  { path: '/admin', element: <Navigate to="/admin/dashboard" replace /> },
   { path: '/admin/*', element: wrap(AdminDashboard) },
   { path: '*', element: wrap(NotFound) },
 ];

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Play, Lock, Clock } from 'lucide-react';
+import { recordActivity } from '@/pages/RecentPage';
 
 interface VideoCardProps {
   video: {
@@ -11,7 +12,8 @@ interface VideoCardProps {
     isPremium: boolean;
     duration?: number;
   };
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'full';
+  percentComplete?: number;
 }
 
 function formatDuration(seconds: number) {
@@ -20,22 +22,39 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-const VideoCard: React.FC<VideoCardProps> = ({ video, size = 'md' }) => {
+const VideoCard: React.FC<VideoCardProps> = ({ video, size = 'md', percentComplete = 0 }) => {
   const navigate = useNavigate();
+  const isFull = size === 'full';
 
-  const sizeClasses = {
+  const fixedClasses: Record<string, string> = {
     sm: 'w-40 h-24',
     md: 'w-52 h-32',
     lg: 'w-64 h-40',
   };
 
+  const handleClick = () => {
+    recordActivity({
+      id: video.id,
+      type: 'video',
+      title: video.title,
+      thumbnailUrl: video.thumbnailUrl,
+      duration: video.duration,
+      percentComplete,
+    });
+    navigate(`/video/${video.id}`);
+  };
+
   return (
     <motion.div
       whileTap={{ scale: 0.95 }}
-      onClick={() => navigate(`/video/${video.id}`)}
-      className="flex-shrink-0 cursor-pointer"
+      onClick={handleClick}
+      className={`cursor-pointer ${isFull ? 'w-full' : 'flex-shrink-0'}`}
     >
-      <div className={`${sizeClasses[size]} relative rounded-2xl overflow-hidden shadow-md bg-slate-800`}>
+      <div
+        className={`relative rounded-2xl overflow-hidden shadow-md bg-slate-800 ${
+          isFull ? 'w-full aspect-video' : fixedClasses[size]
+        }`}
+      >
         {video.thumbnailUrl ? (
           <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" />
         ) : (
@@ -59,8 +78,13 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, size = 'md' }) => {
             <Lock size={12} />
           </div>
         )}
+        {percentComplete > 0 && percentComplete < 100 && (
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
+            <div className="h-full bg-rose-500" style={{ width: `${percentComplete}%` }} />
+          </div>
+        )}
       </div>
-      <p className="mt-2 text-xs font-bold text-slate-700 truncate w-52">{video.title}</p>
+      <p className="mt-2 text-xs font-bold text-slate-700 line-clamp-2 leading-tight">{video.title}</p>
     </motion.div>
   );
 };

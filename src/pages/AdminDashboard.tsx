@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Routes, Route, Link } from 'react-router-dom';
+import { useNavigate, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { gql } from '@apollo/client';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard, BookOpen, Play, FolderTree, Users, CreditCard, BarChart3,
   Upload, X, ChevronLeft, Trash2, Edit2, Save, Search, Crown, LogOut,
-  PieChart, TrendingUp, DollarSign, BookOpenCheck, Clapperboard
+  PieChart, TrendingUp, DollarSign, BookOpenCheck, Clapperboard, Menu
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -119,31 +119,33 @@ function StatCard({ icon: Icon, label, value, color }: any) {
   );
 }
 
-function AdminSidebar({ active }: { active: string }) {
-  const navigate = useNavigate();
-  const links = [
-    { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { key: 'books', label: 'Books', icon: BookOpen },
-    { key: 'videos', label: 'Videos', icon: Play },
-    { key: 'categories', label: 'Categories', icon: FolderTree },
-    { key: 'users', label: 'Users', icon: Users },
-    { key: 'subscriptions', label: 'Subscriptions', icon: Crown },
-    { key: 'payments', label: 'Payments', icon: CreditCard },
-  ];
 
+const NAV_LINKS = [
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'books',     label: 'Books',     icon: BookOpen },
+  { key: 'videos',    label: 'Videos',    icon: Play },
+  { key: 'categories',label: 'Categories',icon: FolderTree },
+  { key: 'users',     label: 'Users',     icon: Users },
+  { key: 'subscriptions', label: 'Subscriptions', icon: Crown },
+  { key: 'payments',  label: 'Payments',  icon: CreditCard },
+];
+
+function SidebarContent({ active, onNav }: { active: string; onNav?: () => void }) {
+  const navigate = useNavigate();
   return (
-    <div className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 h-screen sticky top-0">
-      <div className="p-6 flex items-center gap-3">
-        <div className="w-9 h-9 bg-rose-500 rounded-xl flex items-center justify-center">
+    <div className="flex flex-col h-full bg-white">
+      <div className="p-6 flex items-center gap-3 border-b border-slate-100">
+        <div className="w-9 h-9 bg-rose-500 rounded-xl flex items-center justify-center shrink-0">
           <BookOpen size={18} className="text-white" />
         </div>
         <span className="font-black text-slate-800 text-lg">Kenkan Admin</span>
       </div>
-      <nav className="flex-1 px-3 space-y-1">
-        {links.map((link) => (
+      <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+        {NAV_LINKS.map((link) => (
           <Link
             key={link.key}
             to={`/admin/${link.key}`}
+            onClick={onNav}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
               active === link.key ? 'bg-rose-50 text-rose-600' : 'text-slate-500 hover:bg-slate-50'
             }`}
@@ -153,7 +155,7 @@ function AdminSidebar({ active }: { active: string }) {
           </Link>
         ))}
       </nav>
-      <div className="p-4">
+      <div className="p-4 border-t border-slate-100">
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/')}
@@ -165,6 +167,7 @@ function AdminSidebar({ active }: { active: string }) {
     </div>
   );
 }
+
 
 function DashboardView() {
   const { data, loading } = useQuery(ANALYTICS_QUERY);
@@ -695,37 +698,93 @@ function PaymentsView() {
   );
 }
 
+
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const location = window.location.pathname;
-  const active = location.split('/').pop() || 'dashboard';
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const segments = location.pathname.split('/').filter(Boolean);
+  const active = segments[1] || 'dashboard';
+
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <AdminSidebar active={active} />
-      <div className="flex-1 min-w-0">
-        {/* Mobile header */}
-        <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-rose-500 rounded-lg flex items-center justify-center">
-              <BookOpen size={16} className="text-white" />
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-slate-100 h-screen sticky top-0">
+        <SidebarContent active={active} />
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              key="overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-40 md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              key="drawer"
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed top-0 left-0 bottom-0 w-72 z-50 shadow-2xl md:hidden"
+            >
+              <SidebarContent active={active} onNav={() => setMobileOpen(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Mobile top bar */}
+        <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMobileOpen(true)}
+              className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center"
+            >
+              <Menu size={18} className="text-slate-600" />
+            </motion.button>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-rose-500 rounded-lg flex items-center justify-center">
+                <BookOpen size={14} className="text-white" />
+              </div>
+              <span className="font-black text-slate-800 text-sm">
+                {NAV_LINKS.find((l) => l.key === active)?.label ?? 'Admin'}
+              </span>
             </div>
-            <span className="font-black text-slate-800">Admin</span>
           </div>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/')} className="text-sm font-bold text-rose-500">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => navigate('/')}
+            className="text-xs font-bold text-rose-500 px-3 py-1.5 rounded-lg bg-rose-50"
+          >
             Exit
           </motion.button>
         </div>
-        <Routes>
-          <Route path="dashboard" element={<DashboardView />} />
-          <Route path="books" element={<BooksView />} />
-          <Route path="videos" element={<VideosView />} />
-          <Route path="categories" element={<CategoriesView />} />
-          <Route path="users" element={<UsersView />} />
-          <Route path="subscriptions" element={<SubscriptionsView />} />
-          <Route path="payments" element={<PaymentsView />} />
-          <Route path="*" element={<DashboardView />} />
-        </Routes>
+
+        {/* Routed views */}
+        <div className="flex-1">
+          <Routes>
+            <Route path="dashboard"    element={<DashboardView />} />
+            <Route path="books"        element={<BooksView />} />
+            <Route path="videos"       element={<VideosView />} />
+            <Route path="categories"   element={<CategoriesView />} />
+            <Route path="users"        element={<UsersView />} />
+            <Route path="subscriptions" element={<SubscriptionsView />} />
+            <Route path="payments"     element={<PaymentsView />} />
+            <Route path="*"            element={<DashboardView />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
