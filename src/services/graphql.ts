@@ -1,9 +1,11 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { mockLink } from '@/lib/mockLink';
 
-const httpLink = createHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql',
-});
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL as string | undefined;
+const useMock = !GRAPHQL_URL;
+
+const httpLink = createHttpLink({ uri: GRAPHQL_URL || '/graphql' });
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('kenkan_token');
@@ -16,7 +18,7 @@ const authLink = setContext((_, { headers }) => {
 });
 
 export const apolloClient = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: useMock ? mockLink : authLink.concat(httpLink),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: { fetchPolicy: 'network-only' },
