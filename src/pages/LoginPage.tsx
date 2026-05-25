@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, BookOpen } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, BookOpen, ChevronDown, Zap, Crown, Shield } from 'lucide-react';
 import { useMutation } from '@apollo/client/react';
 import { gql } from '@apollo/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDemoAccounts, type DemoAccount } from '@/lib/seedAccounts';
 import { toast } from 'sonner';
 
 const LOGIN_MUTATION = gql`
@@ -39,6 +40,12 @@ const SOCIAL_LOGIN = gql`
   }
 `;
 
+const roleIcon = (account: DemoAccount) => {
+  if (account.role === 'admin') return Shield;
+  if (account.subscriptionStatus === 'premium') return Crown;
+  return Zap;
+};
+
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -46,7 +53,9 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
 
+  const demoAccounts = getDemoAccounts();
   const [doLogin] = useMutation(LOGIN_MUTATION);
   const [doSocial] = useMutation(SOCIAL_LOGIN);
 
@@ -84,18 +93,92 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleDemoFill = (account: DemoAccount) => {
+    setEmail(account.email);
+    setPassword(account.password);
+    setShowDemo(false);
+    toast.success(`Filled credentials for "${account.label}"`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 to-amber-50 px-6 py-8 flex flex-col">
       <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/')} className="self-start mb-6 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
         <ArrowLeft size={20} className="text-slate-600" />
       </motion.button>
 
-      <div className="flex flex-col items-center mb-8">
+      <div className="flex flex-col items-center mb-6">
         <div className="w-16 h-16 bg-rose-500 rounded-2xl flex items-center justify-center shadow-lg mb-4">
           <BookOpen size={32} className="text-white" />
         </div>
         <h1 className="text-2xl font-black text-slate-800">Welcome Back!</h1>
         <p className="text-sm text-slate-500 mt-1">Sign in to continue reading</p>
+      </div>
+
+      {/* Demo Accounts Panel */}
+      <div className="mb-5 rounded-2xl overflow-hidden border border-indigo-100 shadow-sm bg-white">
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setShowDemo((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50"
+        >
+          <div className="flex items-center gap-2">
+            <Zap size={16} className="text-indigo-500" />
+            <span className="text-sm font-bold text-indigo-700">Demo Accounts — Quick Test Login</span>
+          </div>
+          <motion.div animate={{ rotate: showDemo ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown size={16} className="text-indigo-400" />
+          </motion.div>
+        </motion.button>
+
+        <AnimatePresence>
+          {showDemo && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pt-3 pb-4 space-y-2">
+                <p className="text-[11px] text-slate-400 font-medium mb-2">
+                  Credentials are seeded in your browser's localStorage. Click any account to auto-fill the form.
+                </p>
+                {demoAccounts.map((account) => {
+                  const Icon = roleIcon(account);
+                  return (
+                    <motion.button
+                      key={account.email}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleDemoFill(account)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors text-left"
+                    >
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: account.color + '18' }}
+                      >
+                        <Icon size={17} style={{ color: account.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-slate-700">{account.label}</span>
+                          <span
+                            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ backgroundColor: account.color + '18', color: account.color }}
+                          >
+                            {account.role}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 truncate">{account.email}</p>
+                        <p className="text-[11px] font-mono text-slate-400">pw: {account.password}</p>
+                      </div>
+                      <div className="text-[10px] text-indigo-400 font-bold shrink-0">Fill</div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 flex-grow">
