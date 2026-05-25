@@ -1,40 +1,26 @@
-import { Link } from "react-router-dom";
-import PageMeta from "@/components/common/PageMeta";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { BookOpen } from 'lucide-react';
 
-export default function NotFound() {
+const NotFound: React.FC = () => {
+  const navigate = useNavigate();
   return (
-    <>
-      <PageMeta title="Page Not Found" description="" />
-      <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
-        <div className="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
-          <h1 className="mb-8 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-2xl">
-            ERROR
-          </h1>
-
-          <img src="/images/error/404.svg" alt="404" className="dark:hidden" />
-          <img
-            src="/images/error/404-dark.svg"
-            alt="404"
-            className="hidden dark:block"
-          />
-
-          <p className="mt-10 mb-6 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-            The page may have been deleted or does not exist. Please check the
-            URL is correct.
-          </p>
-
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-          >
-            Back to home
-          </Link>
-        </div>
-        {/* <!-- Footer --> */}
-        <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
-          &copy; {new Date().getFullYear()}
-        </p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-rose-50 to-amber-50 px-6">
+      <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
+        <BookOpen size={36} className="text-slate-300" />
       </div>
-    </>
+      <h1 className="text-4xl font-black text-slate-800 mb-2">Lost?</h1>
+      <p className="text-slate-500 mb-8 text-center">This page doesn't exist in our storybook.</p>
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={() => navigate('/')}
+        className="bg-rose-500 text-white px-8 py-3 rounded-2xl font-bold shadow-lg"
+      >
+        Go Home
+      </motion.button>
+    </div>
   );
-}
+};
+
+export default NotFound;

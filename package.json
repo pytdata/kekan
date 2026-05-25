@@ -8,6 +8,7 @@
     "lint": "tsgo -p tsconfig.check.json; npx biome lint; .rules/check.sh;npx tailwindcss -i ./src/index.css -o /dev/null 2>&1 | grep -E '^(CssSyntaxError|Error):.*' || true;.rules/testBuild.sh"
   },
   "dependencies": {
+    "@apollo/client": "^4.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -45,7 +46,9 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
     "eventsource-parser": "^3.0.6",
+    "graphql": "^16.14.0",
     "input-otp": "^1.4.2",
+    "jszip": "^3.10.1",
     "ky": "^1.13.0",
     "lucide-react": "^0.576.0",
     "miaoda-auth-react": "2.0.6",
