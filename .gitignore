@@ -27,3 +27,15 @@ package-lock.json
 .sync
 history/*.json
 .vite_cache
+
+# Environment variables — never commit real secrets
+.env
+.env.local
+.env.production
+server/.env
+server/.env.local
+server/.env.production
+
+# Keep the example files (safe to commit)
+!.env.example
+!server/.env.example
