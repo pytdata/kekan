@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
+import AdminRouteGuard from '@/components/AdminRouteGuard';
 
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const BrowsePage = lazy(() => import('@/pages/BrowsePage'));
@@ -23,6 +24,14 @@ const wrap = (Component: React.FC) => (
   </Suspense>
 );
 
+const AdminWrapped = () => (
+  <AdminRouteGuard>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen text-lg font-bold text-slate-600">Loading...</div>}>
+      <AdminDashboard />
+    </Suspense>
+  </AdminRouteGuard>
+);
+
 export const routes: RouteObject[] = [
   { path: '/', element: wrap(HomePage) },
   { path: '/browse', element: wrap(BrowsePage) },
@@ -38,6 +47,6 @@ export const routes: RouteObject[] = [
   { path: '/subscription', element: wrap(SubscriptionPage) },
   // Redirect bare /admin to /admin/dashboard
   { path: '/admin', element: <Navigate to="/admin/dashboard" replace /> },
-  { path: '/admin/*', element: wrap(AdminDashboard) },
+  { path: '/admin/*', element: <AdminWrapped /> },
   { path: '*', element: wrap(NotFound) },
 ];
